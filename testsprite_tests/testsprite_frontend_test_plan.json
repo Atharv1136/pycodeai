@@ -1,0 +1,647 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Signup with Valid Credentials",
+    "description": "Verify that a new user can successfully sign up using valid email, username, and password and receive a valid JWT token session.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the signup page"
+      },
+      {
+        "type": "action",
+        "description": "Input valid username, email, and password"
+      },
+      {
+        "type": "action",
+        "description": "Submit the signup form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user account is created in the database"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a JWT token is issued and stored for the session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify redirection to dashboard or landing page"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Login with Correct Credentials",
+    "description": "Verify user can login with valid credentials and receive a JWT token for session management.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page"
+      },
+      {
+        "type": "action",
+        "description": "Input valid registered username/email and password"
+      },
+      {
+        "type": "action",
+        "description": "Click the login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is authenticated and a JWT token is generated"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is granted to protected routes like dashboard"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Login with Incorrect Credentials",
+    "description": "Verify login attempt fails when invalid username or password is provided.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page"
+      },
+      {
+        "type": "action",
+        "description": "Input invalid username/email or incorrect password"
+      },
+      {
+        "type": "action",
+        "description": "Click the login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login fails and an error message is shown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no JWT token is generated or stored in session"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "JWT Token Expiry and Session Management",
+    "description": "Verify JWT tokens expire after the configured period and users are logged out accordingly.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login successfully and obtain JWT token"
+      },
+      {
+        "type": "action",
+        "description": "Simulate or wait for JWT token expiry time"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access protected routes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied and user is prompted to login again"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Project Creation and Persistence",
+    "description": "Verify users can create a new project and that it is persisted in the database.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Click 'Create Project' and enter a unique project name"
+      },
+      {
+        "type": "action",
+        "description": "Submit project creation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify project is listed in dashboard project list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify project data is stored persistently in the database"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Project Rename and Persistence",
+    "description": "Verify user can rename an existing project and the new name is saved persistently.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to dashboard and select a project"
+      },
+      {
+        "type": "action",
+        "description": "Rename the project with a new unique name"
+      },
+      {
+        "type": "action",
+        "description": "Save the changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the updated project name is shown in dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify new name is persisted in the database"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Project Deletion",
+    "description": "Verify user can delete a project and it is removed from the dashboard and database.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to dashboard and select a project"
+      },
+      {
+        "type": "action",
+        "description": "Initiate project deletion and confirm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify project is no longer listed in dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify project and files are removed from the database"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Create, Rename, and Delete Files in File Explorer",
+    "description": "Verify users can create new files/folders, rename them, and delete them within a project using the file explorer with persistence.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open a project and access the file explorer"
+      },
+      {
+        "type": "action",
+        "description": "Create new file and verify appearance in file tree"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new file is saved in the database"
+      },
+      {
+        "type": "action",
+        "description": "Rename the file and confirm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the file name is updated in file tree and database"
+      },
+      {
+        "type": "action",
+        "description": "Delete the file"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the file is removed from file tree and database"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Monaco Editor Syntax Highlighting and Autosave",
+    "description": "Verify the Monaco Editor displays Python syntax highlighting correctly and auto-saves changes after modifications.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open Python file in Monaco Editor"
+      },
+      {
+        "type": "action",
+        "description": "Type valid and invalid Python syntax"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify syntax highlighting updates correctly for Python code constructs"
+      },
+      {
+        "type": "action",
+        "description": "Make changes and pause typing to trigger auto-save"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify changes are saved and persisted to database without error"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Execute Python Code in Sandbox with Output Capture",
+    "description": "Verify Python code is executed in a secure sandbox, returning standard output, error output, and execution time accurately.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Write Python code in editor"
+      },
+      {
+        "type": "action",
+        "description": "Click 'Run' to execute code"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify stdout displays expected output correctly"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify stderr shows any execution errors if present"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify displayed execution time is reasonable and under 10 seconds"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Python Code Execution Timeout Handling",
+    "description": "Verify sandbox enforces execution timeout and terminates code running longer than the allowable time with proper error messaging.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Write an infinite loop or long-running Python code"
+      },
+      {
+        "type": "action",
+        "description": "Run the code in the editor"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify code execution terminates after timeout"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is shown a timeout error message"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "AI Chat Assistant Code Explanation",
+    "description": "Verify AI chat panel can explain selected code correctly upon user request.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select snippet of Python code in editor"
+      },
+      {
+        "type": "action",
+        "description": "Open AI Chat panel and send 'explain' request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify AI returns a clear explanation relevant to the code snippet"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "AI Chat Assistant Code Fix Suggestion",
+    "description": "Verify AI chat panel detects errors and suggests code fixes when prompted.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Write code that contains an error"
+      },
+      {
+        "type": "action",
+        "description": "Request AI chat panel to 'fix' the code"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify AI suggests corrected code or instructions to resolve issues"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "AI Chat Assistant Code Optimization Suggestion",
+    "description": "Verify AI chat panel analyzes existing code and suggests performance or style optimizations.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Write functional but suboptimal Python code in editor"
+      },
+      {
+        "type": "action",
+        "description": "Request AI to optimize the code via chat"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify AI returns helpful suggestions or improved code"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Data Upload of CSV and Excel Files",
+    "description": "Verify users can upload CSV and Excel files, which are validated, accepted, and integrated into the project file tree.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open a project and open the file upload drag-and-drop area"
+      },
+      {
+        "type": "action",
+        "description": "Drag and drop or select a valid CSV file"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify file type validation accepts the CSV"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify file is added to the project file tree"
+      },
+      {
+        "type": "action",
+        "description": "Repeat process with a valid Excel file (.xlsx)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify Excel file is accepted and listed in the file tree"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "AI Generates Cleaning and Visualization Code from Natural Language Prompts",
+    "description": "Verify AI generates valid Python data cleaning and visualization code from user prompts after file upload.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a CSV or Excel file containing sample data"
+      },
+      {
+        "type": "action",
+        "description": "Input a natural language prompt requesting data cleaning or visualization code"
+      },
+      {
+        "type": "action",
+        "description": "Send prompt to AI through chat interface"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify AI returns syntactically correct Python code targeting the uploaded data"
+      },
+      {
+        "type": "action",
+        "description": "Run the generated code in sandbox"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify code executes successfully and output matches intended cleaning or plot"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "File Upload Validation for Unsupported Types",
+    "description": "Verify the system rejects unsupported file types during upload with appropriate error messages.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to upload unsupported file types like .exe, .bin, or very large files over limit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify upload is rejected and an informative error message is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no unauthorized files are added to the file tree or database"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Integrated Terminal Package Installation and Shell Commands",
+    "description": "Verify integrated terminal accepts shell commands, executes correctly, and reflects changes like package installations.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open integrated terminal within an active project"
+      },
+      {
+        "type": "action",
+        "description": "Run shell commands like 'pip install package_name' inside terminal"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify terminal displays command output and success messages"
+      },
+      {
+        "type": "action",
+        "description": "Run Python code that uses installed packages through editor"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify packages are available and code executes without import errors"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Password Security - Bcrypt Hashing Verification",
+    "description": "Verify that user passwords are hashed using bcrypt and not stored in plain text.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Sign up a user with a known password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify password is stored hashed with bcrypt in the database"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no plain text password is stored or transmitted"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "SQL Injection Prevention in Authentication APIs",
+    "description": "Verify authentication endpoints defend against SQL injection attempts during login and signup.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt login with SQL injection strings in username or password fields"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify authentication fails safely without exposing errors or bypassing security"
+      },
+      {
+        "type": "action",
+        "description": "Attempt signup with SQL injection payloads"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify signup is rejected or sanitized input handled correctly"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Performance: Landing Page Load Time",
+    "description": "Verify landing page loads completely within 3 seconds under normal network conditions.",
+    "category": "performance",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the landing page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the page content is fully rendered within 3 seconds"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Performance: Code Execution Time",
+    "description": "Verify that normal code execution completes within 10 seconds in the sandbox environment.",
+    "category": "performance",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Execute typical Python scripts including some using numpy and pandas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify execution completes in under 10 seconds"
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "UI Responsiveness Across Device Types",
+    "description": "Verify that the user interface is responsive, works correctly and maintains layout integrity on desktop, tablet, and mobile devices.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the application on desktop, tablet, and mobile viewport sizes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify navigation, editor, file explorer, console, and chat panel display correctly without layout breaks"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI elements remain accessible and functional"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "Auto-Save Reliability During Editing",
+    "description": "Verify that changes made in code editor and file operations are auto-saved reliably without data loss.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open a file and edit code continuously"
+      },
+      {
+        "type": "action",
+        "description": "Pause typing to trigger auto-save multiple times"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no loss of code changes after navigation or page reload"
+      },
+      {
+        "type": "action",
+        "description": "Perform file rename and deletion operations"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify file tree and database stay consistent without orphaned or missing files"
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Secure Code Execution Sandbox Isolation",
+    "description": "Verify that code execution environment is sandboxed to prevent access to host OS resources, network, or unauthorized files.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to execute code that accesses OS files outside sandbox or tries network calls"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify such attempts are blocked, with appropriate error messages, and no system compromise"
+      }
+    ]
+  }
+]

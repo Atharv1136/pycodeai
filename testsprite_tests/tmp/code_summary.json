@@ -1,0 +1,146 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "Next.js",
+    "React",
+    "MySQL",
+    "Zustand",
+    "Monaco Editor",
+    "Google Gemini AI (Genkit)",
+    "Tailwind CSS",
+    "Node.js"
+  ],
+  "features": [
+    {
+      "name": "Authentication",
+      "description": "User authentication system with login, signup, logout, and session management using JWT tokens",
+      "files": [
+        "src/app/login/page.tsx",
+        "src/app/signup/page.tsx",
+        "src/components/auth/LoginForm.tsx",
+        "src/components/auth/SignupForm.tsx",
+        "src/app/api/auth/login/route.ts",
+        "src/app/api/auth/logout/route.ts",
+        "src/lib/auth.ts"
+      ]
+    },
+    {
+      "name": "Project Management",
+      "description": "Create, load, save, delete, and manage user projects with file trees stored in MySQL database",
+      "files": [
+        "src/app/dashboard/page.tsx",
+        "src/app/dashboard/projects/page.tsx",
+        "src/app/api/projects/route.ts",
+        "src/app/api/projects/diagnostic/route.ts",
+        "src/lib/store.ts"
+      ]
+    },
+    {
+      "name": "Code Editor",
+      "description": "Monaco Editor integration with Python syntax highlighting, code completion, and real-time editing with auto-save",
+      "files": [
+        "src/components/editor/CodeEditor.tsx",
+        "src/components/editor/EditorLayout.tsx",
+        "src/app/editor/[projectId]/page.tsx"
+      ]
+    },
+    {
+      "name": "File Management",
+      "description": "Create, delete, rename, and organize files and folders within projects using file explorer",
+      "files": [
+        "src/components/editor/FileExplorer.tsx",
+        "src/lib/store.ts"
+      ]
+    },
+    {
+      "name": "Code Execution",
+      "description": "Execute Python code directly within the editor using Node.js spawn, capture output, handle errors, and auto-install packages",
+      "files": [
+        "src/ai/flows/run-python-code.ts",
+        "src/components/editor/OutputConsole.tsx",
+        "src/lib/store.ts"
+      ]
+    },
+    {
+      "name": "AI Code Assistant",
+      "description": "AI-powered chat assistant using Google Gemini for code explanations, error fixes, optimization, and code generation",
+      "files": [
+        "src/components/ai/ChatPanel.tsx",
+        "src/ai/flows/ai-code-assistance.ts",
+        "src/ai/flows/decide-code-assistance-actions.ts",
+        "src/ai/genkit.ts",
+        "src/lib/store.ts"
+      ]
+    },
+    {
+      "name": "Terminal",
+      "description": "Integrated terminal for running shell commands, installing packages, and managing Python environment",
+      "files": [
+        "src/components/editor/Terminal.tsx",
+        "src/app/api/terminal/route.ts",
+        "src/app/api/terminal/install-all-packages/route.ts"
+      ]
+    },
+    {
+      "name": "File Upload",
+      "description": "Upload files to projects with drag-and-drop support, file type validation, and automatic integration into project file tree",
+      "files": [
+        "src/components/editor/FileUpload.tsx",
+        "src/app/api/upload/route.ts",
+        "src/app/api/files/detect-new/route.ts",
+        "src/app/api/files/project/route.ts"
+      ]
+    },
+    {
+      "name": "Database Persistence",
+      "description": "Save and load projects, files, and user data from MySQL database with JSON file tree storage",
+      "files": [
+        "src/lib/database.ts",
+        "src/app/api/projects/route.ts",
+        "src/lib/store.ts"
+      ]
+    },
+    {
+      "name": "Landing Page",
+      "description": "Marketing landing page with hero section, features, pricing, testimonials, FAQ, and navigation",
+      "files": [
+        "src/app/page.tsx",
+        "src/components/landing/Hero.tsx",
+        "src/components/landing/Features.tsx",
+        "src/components/landing/Pricing.tsx",
+        "src/components/landing/Testimonials.tsx",
+        "src/components/landing/FAQ.tsx",
+        "src/components/landing/LandingNavbar.tsx",
+        "src/components/landing/Footer.tsx"
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "description": "User dashboard showing project list, statistics, credits, and quick access to features",
+      "files": [
+        "src/app/dashboard/page.tsx",
+        "src/components/dashboard/ProjectCard.tsx",
+        "src/components/dashboard/ProjectList.tsx",
+        "src/components/dashboard/CreditDisplay.tsx",
+        "src/app/api/stats/route.ts"
+      ]
+    },
+    {
+      "name": "Admin Panel",
+      "description": "Administrative dashboard for managing users, viewing statistics, and system administration",
+      "files": [
+        "src/app/admin/dashboard/page.tsx",
+        "src/app/admin/login/page.tsx",
+        "src/app/api/admin/auth/route.ts"
+      ]
+    },
+    {
+      "name": "State Management",
+      "description": "Centralized state management using Zustand for editor state, projects, files, chat history, and user data",
+      "files": [
+        "src/lib/store.ts"
+      ]
+    }
+  ]
+}
+

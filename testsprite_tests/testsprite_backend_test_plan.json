@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "user authentication signup login logout",
+    "description": "Test the user authentication API endpoints for signup, login, and logout to ensure users can create accounts, authenticate with valid credentials, receive JWT tokens, and properly terminate sessions."
+  },
+  {
+    "id": "TC002",
+    "title": "project management create open rename delete",
+    "description": "Verify the project management API endpoints to create new projects, open existing projects, rename projects, and delete projects with persistence in the MySQL database."
+  },
+  {
+    "id": "TC003",
+    "title": "python code execution sandbox",
+    "description": "Test the code execution API to run Python code in a secure sandbox environment, ensuring correct execution, capturing stdout, stderr, execution time, and handling timeouts."
+  },
+  {
+    "id": "TC004",
+    "title": "ai code assistant chat interface",
+    "description": "Validate the AI chat assistant API for providing contextual code assistance including code explanation, error fixing, optimization, and code generation based on user prompts."
+  },
+  {
+    "id": "TC005",
+    "title": "csv excel file upload and ai data analysis",
+    "description": "Test the file upload API for CSV and Excel files, verify correct parsing, and validate AI-generated cleaning and visualization code execution triggered by natural language prompts."
+  },
+  {
+    "id": "TC006",
+    "title": "file management create rename delete",
+    "description": "Verify file management API endpoints for creating, renaming, and deleting files and folders within projects, ensuring changes are reflected in the project file tree and persisted."
+  },
+  {
+    "id": "TC007",
+    "title": "terminal shell command execution",
+    "description": "Test the integrated terminal API endpoints for running shell commands, installing packages, and managing the Python environment within the cloud IDE."
+  },
+  {
+    "id": "TC008",
+    "title": "file upload drag and drop validation",
+    "description": "Validate the file upload API for drag-and-drop functionality, file type validation, and automatic integration of uploaded files into the project file tree."
+  },
+  {
+    "id": "TC009",
+    "title": "dashboard project list and statistics",
+    "description": "Test the dashboard API endpoints to retrieve user project lists, project statistics, and user credits, ensuring accurate and timely data display."
+  },
+  {
+    "id": "TC010",
+    "title": "admin panel user and system management",
+    "description": "Verify the admin panel API endpoints for user management, system statistics retrieval, and administrative authentication."
+  }
+]

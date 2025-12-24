@@ -1,0 +1,17 @@
+{
+  "status": "init",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:9002/",
+  "backendAuthType": "public",
+  "executionArgs": {
+    "projectName": "nextn",
+    "projectPath": "C:\\Users\\Atharv\\Downloads\\pyapp",
+    "testIds": [],
+    "additionalInstruction": "All authentication endpoints have been fixed. Signup is available at /api/auth/signup. Windows command execution is fixed. All new endpoints (health, ai/assist, code/execute) are ready.",
+    "envs": {
+      "API_KEY": "sk-user-_wl1x6a_h-wl8OLLAGckrA-wi46aWoqLvoHqD7qrEPP8RB5PQDwO_bOruZQIx3-1-wavE33hCN12ydJ_gWHbe4nAIS4kJDugKwZTku1l-g82ElVz9KRlB41hDRyv0Jda_tY"
+    }
+  },
+  "proxy": "http://eafe082e-5c3e-45de-b954-d594e7778926:Qzjx3rmuACq5myJwbCPtU0ZKhfWmtC4H@tun.testsprite.com:8080"
+}

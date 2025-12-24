@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "name": "Amit",
+        "month": "January",
+        "sales": 5000
+    },
+    {
+        "id": 2,
+        "name": "Priya",
+        "month": "January",
+        "sales": 7000
+    },
+    {
+        "id": 5,
+        "name": "Rohan",
+        "month": "February",
+        "sales": 8000
+    },
+    {
+        "id": 7,
+        "name": "Sara",
+        "month": "February",
+        "sales": 9000
+    },
+    {
+        "id": 8,
+        "name": "Amit",
+        "month": "March",
+        "sales": 5500
+    }
+]
