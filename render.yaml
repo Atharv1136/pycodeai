@@ -2,7 +2,13 @@ services:
   - type: web
     name: pyapp
     runtime: node
-    buildCommand: npm install && npm run build
+    buildCommand: |
+      # Install Python dependencies (Python is pre-installed on Render)
+      pip install -r requirements.txt
+      
+      # Install Node.js dependencies and build
+      npm install
+      npm run build
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
