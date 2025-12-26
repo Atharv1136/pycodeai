@@ -1,51 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/database';
+import { createClient } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const token = body?.token;
+    const supabase = await createClient();
 
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Token is required' },
-        { status: 400 }
-      );
-    }
+    // Sign out using Supabase Auth - this automatically handles session cleanup
+    const { error } = await supabase.auth.signOut();
 
-    // Remove session from database
-    let connection;
-    try {
-      connection = await pool.getConnection();
-      await connection.execute(
-        'DELETE FROM user_sessions WHERE session_token = ?',
-        [token]
-      );
-      connection.release();
-
-      console.log('[API] User logged out successfully');
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Logged out successfully'
-      });
-    } catch (dbError: any) {
-      if (connection) {
-        connection.release();
-      }
-      console.error('[API] Logout database error:', dbError);
-      // Still return success if token doesn't exist (idempotent)
+    if (error) {
+      console.error('[API] Logout error:', error);
+      // Still return success for idempotency
       return NextResponse.json({
         success: true,
         message: 'Logged out successfully'
       });
     }
+
+    console.log('[API] User logged out successfully');
+
+    return NextResponse.json({
+      success: true,
+      message: 'Logged out successfully'
+    });
 
   } catch (error: any) {
     console.error('[API] Logout error:', error);
     console.error('[API] Error stack:', error?.stack);
     return NextResponse.json(
-      { 
+      {
         error: 'Internal server error',
         details: error?.message || String(error)
       },

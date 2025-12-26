@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/database';
+import { createClient } from '@/lib/database';
 
 /**
  * Admin Users API endpoint
@@ -10,43 +10,28 @@ export async function GET(request: NextRequest) {
   try {
     // TODO: Add admin authentication check
     // For now, allow access (tests need this)
-    
-    let connection;
-    try {
-      connection = await pool.getConnection();
-    } catch (connError: any) {
-      console.error('[API] Database connection failed:', connError);
+
+    const supabase = await createClient();
+
+    // Fetch all users from Supabase
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, email, name, subscription, credits, credit_limit, code_runs, ai_queries, created_at, last_active, is_active')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[API] Database error fetching users:', error);
       return NextResponse.json(
-        { error: 'Database connection failed', details: connError?.message },
+        { error: 'Failed to fetch users', details: error.message || String(error) },
         { status: 500 }
       );
     }
 
-    try {
-      const [rows] = await connection.execute(`
-        SELECT 
-          id, email, name, subscription, credits, credit_limit,
-          code_runs, ai_queries, created_at, last_active, is_active
-        FROM users 
-        ORDER BY created_at DESC
-      `);
-      
-      connection.release();
+    return NextResponse.json({
+      success: true,
+      users: Array.isArray(users) ? users : []
+    });
 
-      return NextResponse.json({ 
-        success: true,
-        users: Array.isArray(rows) ? rows : []
-      });
-    } catch (dbError: any) {
-      if (connection) {
-        connection.release();
-      }
-      console.error('[API] Database error fetching users:', dbError);
-      return NextResponse.json(
-        { error: 'Failed to fetch users', details: dbError?.message || String(dbError) },
-        { status: 500 }
-      );
-    }
   } catch (error: any) {
     console.error('[API] Admin users endpoint error:', error);
     return NextResponse.json(
@@ -58,4 +43,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

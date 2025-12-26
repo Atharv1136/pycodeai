@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '@/lib/database';
+import { createClient } from '@/lib/database';
 
 /**
  * Diagnostic endpoint to check project data in database
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
-    
+
     if (!userId) {
       return NextResponse.json(
         { error: 'User ID is required' },
@@ -17,123 +17,118 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const connection = await pool.getConnection();
-    
-    try {
-      // Get all projects for user
-      const [projects] = await connection.execute(`
-        SELECT 
-          id, 
-          name, 
-          description, 
-          user_id,
-          LENGTH(file_tree) as file_tree_size,
-          created_at, 
-          updated_at
-        FROM projects 
-        WHERE user_id = ?
-        ORDER BY updated_at DESC
-      `, [userId]);
+    const supabase = await createClient();
 
-      // Get full project data with file_tree
-      const [fullProjects] = await connection.execute(`
-        SELECT 
-          id, 
-          name, 
-          file_tree,
-          created_at, 
-          updated_at
-        FROM projects 
-        WHERE user_id = ?
-        ORDER BY updated_at DESC
-        LIMIT 3
-      `, [userId]);
+    // Get all projects for user
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select('id, name, description, user_id, created_at, updated_at')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
 
-      // Analyze file_tree structure
-      const analyzedProjects = (fullProjects as any[]).map((project: any) => {
-        let analysis = {
-          id: project.id,
-          name: project.name,
-          file_tree_size: 0,
-          file_tree_type: typeof project.file_tree,
-          file_tree_is_null: project.file_tree === null,
-          file_count: 0,
-          folder_count: 0,
-          sample_structure: null as any,
-          error: null as string | null
-        };
+    if (projectsError) {
+      console.error('[Diagnostic] Error fetching projects:', projectsError);
+      return NextResponse.json(
+        { error: 'Failed to fetch projects', details: projectsError.message },
+        { status: 500 }
+      );
+    }
 
-        try {
-          let fileTree;
-          if (typeof project.file_tree === 'string') {
-            analysis.file_tree_size = project.file_tree.length;
-            fileTree = JSON.parse(project.file_tree);
-          } else if (project.file_tree) {
-            fileTree = project.file_tree;
-            analysis.file_tree_size = JSON.stringify(fileTree).length;
-          }
+    // Get full project data with file_tree
+    const { data: fullProjects, error: fullError } = await supabase
+      .from('projects')
+      .select('id, name, file_tree, created_at, updated_at')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+      .limit(3);
 
-          if (fileTree) {
-            const countFilesAndFolders = (items: any[]): { files: number; folders: number } => {
-              let files = 0;
-              let folders = 0;
-              
-              for (const item of items) {
-                if (item.type === 'file') {
-                  files++;
-                } else if (item.type === 'folder') {
-                  folders++;
-                  if (item.children && Array.isArray(item.children)) {
-                    const counts = countFilesAndFolders(item.children);
-                    files += counts.files;
-                    folders += counts.folders;
-                  }
-                }
-              }
-              
-              return { files, folders };
-            };
+    if (fullError) {
+      console.error('[Diagnostic] Error fetching full projects:', fullError);
+    }
 
-            const counts = countFilesAndFolders(fileTree.children || []);
-            analysis.file_count = counts.files;
-            analysis.folder_count = counts.folders;
-            
-            // Get sample structure (first 3 files/folders)
-            analysis.sample_structure = {
-              name: fileTree.name,
-              type: fileTree.type,
-              children_count: (fileTree.children || []).length,
-              sample_children: (fileTree.children || []).slice(0, 3).map((child: any) => ({
-                name: child.name,
-                type: child.type,
-                has_content: child.type === 'file' && child.content !== undefined,
-                content_length: child.type === 'file' ? (child.content?.length || 0) : undefined
-              }))
-            };
-          }
-        } catch (error: any) {
-          analysis.error = error.message;
+    // Analyze file_tree structure
+    const analyzedProjects = (fullProjects || []).map((project: any) => {
+      let analysis = {
+        id: project.id,
+        name: project.name,
+        file_tree_size: 0,
+        file_tree_type: typeof project.file_tree,
+        file_tree_is_null: project.file_tree === null,
+        file_count: 0,
+        folder_count: 0,
+        sample_structure: null as any,
+        error: null as string | null
+      };
+
+      try {
+        let fileTree;
+        if (typeof project.file_tree === 'string') {
+          analysis.file_tree_size = project.file_tree.length;
+          fileTree = JSON.parse(project.file_tree);
+        } else if (project.file_tree) {
+          fileTree = project.file_tree;
+          analysis.file_tree_size = JSON.stringify(fileTree).length;
         }
 
-        return analysis;
-      });
+        if (fileTree) {
+          const countFilesAndFolders = (items: any[]): { files: number; folders: number } => {
+            let files = 0;
+            let folders = 0;
 
-      return NextResponse.json({
-        summary: {
-          total_projects: Array.isArray(projects) ? projects.length : 0,
-          projects_with_data: analyzedProjects.length
-        },
-        projects: Array.isArray(projects) ? projects : [],
-        analyzed_projects: analyzedProjects
-      });
-    } finally {
-      connection.release();
-    }
+            for (const item of items) {
+              if (item.type === 'file') {
+                files++;
+              } else if (item.type === 'folder') {
+                folders++;
+                if (item.children && Array.isArray(item.children)) {
+                  const counts = countFilesAndFolders(item.children);
+                  files += counts.files;
+                  folders += counts.folders;
+                }
+              }
+            }
+
+            return { files, folders };
+          };
+
+          const counts = countFilesAndFolders(fileTree.children || []);
+          analysis.file_count = counts.files;
+          analysis.folder_count = counts.folders;
+
+          // Get sample structure (first 3 files/folders)
+          analysis.sample_structure = {
+            name: fileTree.name,
+            type: fileTree.type,
+            children_count: (fileTree.children || []).length,
+            sample_children: (fileTree.children || []).slice(0, 3).map((child: any) => ({
+              name: child.name,
+              type: child.type,
+              has_content: child.type === 'file' && child.content !== undefined,
+              content_length: child.type === 'file' ? (child.content?.length || 0) : undefined
+            }))
+          };
+        }
+      } catch (error: any) {
+        analysis.error = error.message;
+      }
+
+      return analysis;
+    });
+
+    return NextResponse.json({
+      summary: {
+        total_projects: Array.isArray(projects) ? projects.length : 0,
+        projects_with_data: analyzedProjects.length
+      },
+      projects: Array.isArray(projects) ? projects : [],
+      analyzed_projects: analyzedProjects
+    });
+
   } catch (error: any) {
     console.error('[Diagnostic] Error:', error);
     return NextResponse.json(
-      { 
-        error: 'Diagnostic failed', 
+      {
+        error: 'Diagnostic failed',
         details: error.message,
         stack: error.stack
       },
@@ -141,4 +136,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
