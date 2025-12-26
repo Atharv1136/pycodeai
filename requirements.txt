@@ -1,9 +1,5 @@
 # Python packages required for the application
-pygame==2.5.2
-matplotlib==3.8.2
-pandas==2.1.4
+# Note: pygame and other GUI packages are auto-installed at runtime by the app
+# Only including packages that install easily without system dependencies
 numpy==1.26.2
-seaborn==0.13.0
-scikit-learn==1.3.2
-scipy==1.11.4
-plotly==5.18.0
+pandas==2.1.4
