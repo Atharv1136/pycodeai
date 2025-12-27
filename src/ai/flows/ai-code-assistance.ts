@@ -115,18 +115,19 @@ ${input.code}
     });
   }
 
-  prompt += `\n\nFollow these rules:
-1. Analyze the user's instruction to determine their intent (e.g., explain, write, fix, optimize, create a file).
-2. If the intent is purely to get an explanation or answer a question, provide a clear, concise textual response. Do not return any code.
-3. If the intent is to modify existing code, provide the complete, updated Python code.
-4. If the intent is to generate a new file, extract the filename and provide the complete code for the new file.
-5. Do not wrap code in markdown backticks in your response.
+  prompt += `\n\nIMPORTANT INSTRUCTIONS:
+1. **ALWAYS write the code directly** - Do NOT ask for confirmation or explain what you will do. Just do it!
+2. If the user asks you to "write code", "create a program", "make a script", etc., you MUST return the complete code in the "code" field.
+3. If the user mentions a filename (like "store in main.py"), put that filename in the "fileName" field.
+4. Only provide explanations without code if the user explicitly asks "explain" or "what is" or "how does".
+5. When in doubt, WRITE THE CODE. Users want code, not explanations.
+6. Do not wrap code in markdown backticks in your response.
 
 Respond in JSON format with this structure:
 {
-  "response": "Your textual explanation",
-  "code": "The code if applicable (optional)",
-  "fileName": "The filename if creating a new file (optional)"
+  "response": "Brief confirmation of what you did (e.g., 'I've written the code to clean data.json')",
+  "code": "THE COMPLETE PYTHON CODE HERE",
+  "fileName": "filename.py if user specified one"
 }`;
 
   const completion = await openai.chat.completions.create({
@@ -224,16 +225,13 @@ The file will be automatically available in the same directory when the code run
 {{/each}}
 {{/if}}
 
-Follow these rules:
-1.  Analyze the user's instruction to determine their intent (e.g., explain, write, fix, optimize, create a file).
-2.  If the intent is purely to get an explanation or answer a question, provide a clear, concise textual response in the 'response' field. Do not return any code.
-3.  If the intent is to modify existing code (e.g., "fix this," "add comments," "optimize this"), you MUST provide the complete, updated Python code in the 'code' field. Also provide a brief explanation of the changes in the 'response' field.
-4.  If the intent is to generate a new file (e.g., "create a file named utils.py to hold helper functions", "make a file called 'test.py'"), you MUST:
-    a. Extract the filename from the instruction and return it in the 'fileName' field.
-    b. Provide the complete code for the new file in the 'code' field.
-    c. Provide a confirmation message in the 'response' field (e.g., "Sure, I've created utils.py for you.").
-5.  If the intent is to write new code but no filename is specified, provide the new code in the 'code' field and a 'response' explaining it. The user can then copy it or decide where to save it.
-6.  Do not wrap the code in the 'code' field in markdown backticks. Return only the raw code.
+IMPORTANT INSTRUCTIONS:
+1. **ALWAYS write the code directly** - Do NOT ask for confirmation or explain what you will do. Just do it!
+2. If the user asks you to "write code", "create a program", "make a script", etc., you MUST return the complete code in the 'code' field.
+3. If the user mentions a filename (like "store in main.py"), put that filename in the 'fileName' field.
+4. Only provide explanations without code if the user explicitly asks "explain" or "what is" or "how does".
+5. When in doubt, WRITE THE CODE. Users want code, not explanations.
+6. Do not wrap the code in the 'code' field in markdown backticks. Return only the raw code.
   `,
       });
 
