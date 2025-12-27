@@ -785,8 +785,8 @@ if not os.path.exists('${file.name}'):
 
       if (newCode !== undefined && newCode !== null) {
         if (newFileName) {
-          // Check if file already exists
-          const existingFile = get().files.find(f => f.name === newFileName);
+          // Check if file already exists in openFiles
+          const existingFile = get().openFiles.find((f: File) => f.name === newFileName);
 
           if (existingFile) {
             // File exists - update it
@@ -829,9 +829,9 @@ if not os.path.exists('${file.name}'):
         const quotaMatch = errorMessage.match(/limit: (\d+)/i);
         const quotaLimit = quotaMatch ? quotaMatch[1] : null;
 
-        let message = `⚠️ **AI Quota Limit Reached**
+        let message = `⚠️ ** AI Quota Limit Reached **
 
-You've exceeded the free tier quota limit for the Gemini API.`;
+          You've exceeded the free tier quota limit for the Gemini API.`;
 
         if (quotaLimit) {
           message += `\n\n**Quota Limit:** ${quotaLimit} requests per day (free tier)`;
