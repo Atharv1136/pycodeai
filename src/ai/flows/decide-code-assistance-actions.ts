@@ -7,8 +7,10 @@
  * - DecideCodeAssistanceActionsOutput - The return type for the decideCodeAssistanceActions function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { getAiForUser } from '@/ai/genkit';
+import { getUserApiKeys } from '@/lib/api-keys';
+import { createClient } from '@/lib/supabase/server';
+import { z } from 'genkit';
 
 const DecideCodeAssistanceActionsInputSchema = z.object({
   code: z.string().describe('The code currently open in the editor.'),
@@ -33,11 +35,39 @@ export async function decideCodeAssistanceActions(input: DecideCodeAssistanceAct
   return decideCodeAssistanceActionsFlow(input);
 }
 
-const decideCodeAssistanceActionsPrompt = ai.definePrompt({
-  name: 'decideCodeAssistanceActionsPrompt',
-  input: {schema: DecideCodeAssistanceActionsInputSchema},
-  output: {schema: DecideCodeAssistanceActionsOutputSchema},
-  prompt: `You are an AI assistant helping decide which quick actions to offer a user based on the code they have open in their editor.
+const decideCodeAssistanceActionsFlow = async (input: DecideCodeAssistanceActionsInput): Promise<DecideCodeAssistanceActionsOutput> => {
+  try {
+    // Get current user
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        actions: [],
+        codeContext: 'Please log in to use AI assistance.'
+      };
+    }
+
+    // Fetch user's API keys
+    const userApiKeys = await getUserApiKeys(user.id);
+
+    // Check if user has a Gemini key
+    if (!userApiKeys.gemini) {
+      return {
+        actions: [],
+        codeContext: 'Please add your Gemini API key in Profile settings.'
+      };
+    }
+
+    // Create AI instance with user's keys
+    const userAi = getAiForUser(userApiKeys);
+
+    // Define prompt dynamically
+    const prompt = userAi.definePrompt({
+      name: 'decideCodeAssistanceActionsPrompt',
+      input: { schema: DecideCodeAssistanceActionsInputSchema },
+      output: { schema: DecideCodeAssistanceActionsOutputSchema },
+      prompt: `You are an AI assistant helping decide which quick actions to offer a user based on the code they have open in their editor.
 
 Analyze the following code and determine which actions would be most helpful to the user. Also, provide a brief summary of the code for context.
 
@@ -56,16 +86,15 @@ Return a JSON object with the following format:
   "codeContext": "A brief summary of the code"
 }
 `,
-});
+    });
 
-const decideCodeAssistanceActionsFlow = ai.defineFlow(
-  {
-    name: 'decideCodeAssistanceActionsFlow',
-    inputSchema: DecideCodeAssistanceActionsInputSchema,
-    outputSchema: DecideCodeAssistanceActionsOutputSchema,
-  },
-  async input => {
-    const {output} = await decideCodeAssistanceActionsPrompt(input);
+    const { output } = await prompt(input);
     return output!;
+  } catch (error: any) {
+    console.error('Decide code assistance actions error:', error);
+    return {
+      actions: [],
+      codeContext: 'Error analyzing code.'
+    };
   }
-);
+};
