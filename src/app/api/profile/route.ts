@@ -116,6 +116,14 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    console.log('[API Profile PUT] Received body:', {
+      hasOpenAI: !!body.openaiApiKey,
+      hasGemini: !!body.geminiApiKey,
+      openaiLength: body.openaiApiKey?.length,
+      geminiLength: body.geminiApiKey?.length
+    });
+
     const {
       name,
       username,

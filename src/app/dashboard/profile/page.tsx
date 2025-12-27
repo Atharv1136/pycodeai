@@ -146,6 +146,13 @@ export default function ProfilePage() {
         })
       })
 
+      console.log('[Profile] Saving with API keys:', {
+        hasOpenAI: !!apiKeys.openai,
+        hasGemini: !!apiKeys.gemini,
+        openaiLength: apiKeys.openai?.length,
+        geminiLength: apiKeys.gemini?.length
+      });
+
       if (response.ok) {
         const data = await response.json()
         if (data.profile) {
