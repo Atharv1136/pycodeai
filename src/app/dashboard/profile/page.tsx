@@ -27,7 +27,10 @@ import {
   Code,
   Clock,
   Star,
-  AlertCircle
+  AlertCircle,
+  Key,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 
 interface ProfileData {
@@ -50,6 +53,10 @@ interface ProfileData {
   aiQueries: number
   createdAt: string
   lastActive: string
+  openaiApiKey?: string
+  geminiApiKey?: string
+  hasOpenAiKey: boolean
+  hasGeminiKey: boolean
 }
 
 export default function ProfilePage() {
@@ -59,6 +66,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [showApiKeys, setShowApiKeys] = useState(false)
+  const [apiKeys, setApiKeys] = useState({
+    openai: '',
+    gemini: ''
+  })
   const [stats, setStats] = useState({
     projects: 0,
     codeRuns: 0,
@@ -128,7 +140,9 @@ export default function ProfilePage() {
           github: profile.github,
           twitter: profile.twitter,
           linkedin: profile.linkedin,
-          avatarUrl: profile.avatarUrl
+          avatarUrl: profile.avatarUrl,
+          openaiApiKey: apiKeys.openai || undefined,
+          geminiApiKey: apiKeys.gemini || undefined
         })
       })
 
@@ -457,6 +471,68 @@ export default function ProfilePage() {
                       placeholder="username"
                     />
                   </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* API Keys */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="h-5 w-5" />
+                API Keys
+              </CardTitle>
+              <CardDescription>
+                Manage your AI service API keys for OpenAI and Gemini
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Your API keys are encrypted and stored securely. They are never shared or exposed.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="openai-key">OpenAI API Key</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="openai-key"
+                      type={showApiKeys ? "text" : "password"}
+                      value={apiKeys.openai}
+                      onChange={(e) => setApiKeys({ ...apiKeys, openai: e.target.value })}
+                      placeholder={profile?.hasOpenAiKey ? profile.openaiApiKey || "sk-...****" : "sk-..."}
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setShowApiKeys(!showApiKeys)}
+                    >
+                      {showApiKeys ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Get your key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="underline">OpenAI Platform</a>
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gemini-key">Gemini API Key</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="gemini-key"
+                      type={showApiKeys ? "text" : "password"}
+                      value={apiKeys.gemini}
+                      onChange={(e) => setApiKeys({ ...apiKeys, gemini: e.target.value })}
+                      placeholder={profile?.hasGeminiKey ? profile.geminiApiKey || "AIza...****" : "AIza..."}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Get your key from <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">Google AI Studio</a>
+                  </p>
                 </div>
               </div>
             </CardContent>

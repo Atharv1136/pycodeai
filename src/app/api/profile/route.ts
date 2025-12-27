@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { verifyToken } from '@/lib/auth';
+import { encryptApiKey, decryptApiKey, maskApiKey, validateApiKeyFormat } from '@/lib/encryption';
 
 /**
  * Get user profile
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     const { data: profile, error } = await supabase
       .from('users')
-      .select('id, email, name, username, bio, location, website, github, twitter, linkedin, avatar_url, profile_complete, subscription, credits, credit_limit, code_runs, ai_queries, created_at, last_active, is_active')
+      .select('id, email, name, username, bio, location, website, github, twitter, linkedin, avatar_url, profile_complete, subscription, credits, credit_limit, code_runs, ai_queries, created_at, last_active, is_active, openai_api_key_encrypted, gemini_api_key_encrypted')
       .eq('id', user.id)
       .single();
 
@@ -31,6 +32,28 @@ export async function GET(request: NextRequest) {
         { error: 'Profile not found' },
         { status: 404 }
       );
+    }
+
+    // Decrypt and mask API keys for display
+    let maskedOpenAiKey = null;
+    let maskedGeminiKey = null;
+
+    try {
+      if (profile.openai_api_key_encrypted) {
+        const decrypted = decryptApiKey(profile.openai_api_key_encrypted);
+        maskedOpenAiKey = maskApiKey(decrypted);
+      }
+    } catch (error) {
+      console.error('[API] Error decrypting OpenAI key:', error);
+    }
+
+    try {
+      if (profile.gemini_api_key_encrypted) {
+        const decrypted = decryptApiKey(profile.gemini_api_key_encrypted);
+        maskedGeminiKey = maskApiKey(decrypted);
+      }
+    } catch (error) {
+      console.error('[API] Error decrypting Gemini key:', error);
     }
 
     return NextResponse.json({
@@ -55,7 +78,11 @@ export async function GET(request: NextRequest) {
         aiQueries: profile.ai_queries,
         createdAt: profile.created_at,
         lastActive: profile.last_active,
-        isActive: profile.is_active
+        isActive: profile.is_active,
+        openaiApiKey: maskedOpenAiKey,
+        geminiApiKey: maskedGeminiKey,
+        hasOpenAiKey: !!profile.openai_api_key_encrypted,
+        hasGeminiKey: !!profile.gemini_api_key_encrypted
       }
     });
 
@@ -98,7 +125,9 @@ export async function PUT(request: NextRequest) {
       github,
       twitter,
       linkedin,
-      avatarUrl
+      avatarUrl,
+      openaiApiKey,
+      geminiApiKey
     } = body;
 
     const updates: any = {};
@@ -111,6 +140,41 @@ export async function PUT(request: NextRequest) {
     if (twitter !== undefined) updates.twitter = twitter || null;
     if (linkedin !== undefined) updates.linkedin = linkedin || null;
     if (avatarUrl !== undefined) updates.avatar_url = avatarUrl || null;
+
+    // Handle API keys with encryption
+    if (openaiApiKey !== undefined) {
+      if (openaiApiKey === '' || openaiApiKey === null) {
+        // Remove API key
+        updates.openai_api_key_encrypted = null;
+      } else if (openaiApiKey && !openaiApiKey.includes('...')) {
+        // Only update if it's a new key (not the masked version)
+        if (!validateApiKeyFormat(openaiApiKey, 'openai')) {
+          return NextResponse.json(
+            { error: 'Invalid OpenAI API key format. Keys should start with "sk-"' },
+            { status: 400 }
+          );
+        }
+        updates.openai_api_key_encrypted = encryptApiKey(openaiApiKey);
+        updates.api_keys_updated_at = new Date().toISOString();
+      }
+    }
+
+    if (geminiApiKey !== undefined) {
+      if (geminiApiKey === '' || geminiApiKey === null) {
+        // Remove API key
+        updates.gemini_api_key_encrypted = null;
+      } else if (geminiApiKey && !geminiApiKey.includes('...')) {
+        // Only update if it's a new key (not the masked version)
+        if (!validateApiKeyFormat(geminiApiKey, 'gemini')) {
+          return NextResponse.json(
+            { error: 'Invalid Gemini API key format. Keys should start with "AIza"' },
+            { status: 400 }
+          );
+        }
+        updates.gemini_api_key_encrypted = encryptApiKey(geminiApiKey);
+        updates.api_keys_updated_at = new Date().toISOString();
+      }
+    }
 
     if (username !== undefined) {
       // Check if username is already taken by another user
@@ -170,7 +234,7 @@ export async function PUT(request: NextRequest) {
     // Fetch updated profile
     const { data: updatedProfile, error: fetchError } = await supabase
       .from('users')
-      .select('id, email, name, username, bio, location, website, github, twitter, linkedin, avatar_url, profile_complete, subscription, credits, credit_limit, code_runs, ai_queries, created_at, last_active, is_active')
+      .select('id, email, name, username, bio, location, website, github, twitter, linkedin, avatar_url, profile_complete, subscription, credits, credit_limit, code_runs, ai_queries, created_at, last_active, is_active, openai_api_key_encrypted, gemini_api_key_encrypted')
       .eq('id', user.id)
       .single();
 
@@ -179,6 +243,28 @@ export async function PUT(request: NextRequest) {
         { error: 'Profile not found after update' },
         { status: 404 }
       );
+    }
+
+    // Decrypt and mask API keys for display
+    let maskedOpenAiKey = null;
+    let maskedGeminiKey = null;
+
+    try {
+      if (updatedProfile.openai_api_key_encrypted) {
+        const decrypted = decryptApiKey(updatedProfile.openai_api_key_encrypted);
+        maskedOpenAiKey = maskApiKey(decrypted);
+      }
+    } catch (error) {
+      console.error('[API] Error decrypting OpenAI key:', error);
+    }
+
+    try {
+      if (updatedProfile.gemini_api_key_encrypted) {
+        const decrypted = decryptApiKey(updatedProfile.gemini_api_key_encrypted);
+        maskedGeminiKey = maskApiKey(decrypted);
+      }
+    } catch (error) {
+      console.error('[API] Error decrypting Gemini key:', error);
     }
 
     return NextResponse.json({
@@ -204,7 +290,11 @@ export async function PUT(request: NextRequest) {
         aiQueries: updatedProfile.ai_queries,
         createdAt: updatedProfile.created_at,
         lastActive: updatedProfile.last_active,
-        isActive: updatedProfile.is_active
+        isActive: updatedProfile.is_active,
+        openaiApiKey: maskedOpenAiKey,
+        geminiApiKey: maskedGeminiKey,
+        hasOpenAiKey: !!updatedProfile.openai_api_key_encrypted,
+        hasGeminiKey: !!updatedProfile.gemini_api_key_encrypted
       }
     });
 
