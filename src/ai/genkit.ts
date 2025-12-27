@@ -33,13 +33,11 @@ export function getAiForUser(apiKeys: UserApiKeys) {
 }
 
 /**
- * Default AI instance for system-level operations
- * Uses environment variables for API keys
- * Only initialized if GOOGLE_GENAI_API_KEY is set
+ * Default AI instance for initialization
+ * This is a placeholder - actual AI operations should use getAiForUser() with user keys
+ * Using a dummy key to prevent initialization errors
  */
-export const ai = process.env.GOOGLE_GENAI_API_KEY
-  ? genkit({
-    plugins: [googleAI()],
-    model: 'googleai/gemini-2.0-flash-exp',
-  })
-  : null;
+export const ai = genkit({
+  plugins: [googleAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY || 'dummy-key-for-initialization' })],
+  model: 'googleai/gemini-2.0-flash-exp',
+});
