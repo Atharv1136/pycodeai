@@ -772,6 +772,13 @@ if not os.path.exists('${file.name}'):
       const result = await aiCodeAssistance(input);
       const { response, code: newCode, fileName: newFileName } = result;
 
+      console.log('[AI Response]', {
+        hasCode: !!newCode,
+        hasFileName: !!newFileName,
+        codeLength: newCode?.length,
+        fileName: newFileName
+      });
+
       set(produce((state: EditorState) => {
         state.chatHistory.push({ role: 'assistant', message: response });
       }));
@@ -779,9 +786,11 @@ if not os.path.exists('${file.name}'):
       if (newCode !== undefined && newCode !== null) {
         if (newFileName) {
           // AI is creating a new file
+          console.log('[AI] Creating new file:', newFileName);
           addNewFile(newFileName, newCode);
         } else if (activeFile) {
           // AI is updating an existing file
+          console.log('[AI] Updating file:', activeFile.name);
           updateFileContent(activeFile.name, newCode);
         }
       }
