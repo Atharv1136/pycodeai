@@ -137,7 +137,17 @@ Respond in JSON format with this structure:
     temperature: 0.7,
   });
 
-  const result = JSON.parse(completion.choices[0].message.content || '{}');
+  const rawContent = completion.choices[0].message.content || '{}';
+  console.log('[OpenAI] Raw response:', rawContent.substring(0, 200));
+
+  const result = JSON.parse(rawContent);
+
+  console.log('[OpenAI] Parsed result:', {
+    hasResponse: !!result.response,
+    hasCode: !!result.code,
+    codeLength: result.code?.length,
+    hasFileName: !!result.fileName
+  });
 
   return {
     response: result.response || 'No response generated',
