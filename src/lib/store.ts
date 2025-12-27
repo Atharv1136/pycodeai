@@ -716,7 +716,7 @@ if not os.path.exists('${file.name}'):
 
   clearOutput: () => set({ output: '' }),
 
-  sendMessage: async (message, attachCode) => {
+  sendMessage: async (message, attachCode, provider?: 'gemini' | 'openai') => {
     if (!message.trim()) return;
 
     const { checkCreditLimit, incrementAiQuery } = get();
