@@ -7,10 +7,11 @@
  * - AiCodeAssistanceOutput - The return type for the aiCodeAssistance function.
  */
 
-import { getAiForUser } from '@/ai/genkit';
+import { getAiForUser, type AiProvider } from '@/ai/genkit';
 import { getUserApiKeys } from '@/lib/api-keys';
 import { createClient } from '@/lib/supabase/server';
 import { z } from 'genkit';
+import OpenAI from 'openai';
 
 const AiCodeAssistanceInputSchema = z.object({
   code: z
@@ -31,6 +32,7 @@ const AiCodeAssistanceInputSchema = z.object({
     }))
     .optional()
     .describe('Files uploaded by the user that can be used as context or reference'),
+  provider: z.enum(['gemini', 'openai']).optional().describe('The AI provider to use'),
 });
 
 export type AiCodeAssistanceInput = z.infer<typeof AiCodeAssistanceInputSchema>;
@@ -92,6 +94,57 @@ async function retryWithBackoff<T>(
   throw lastError;
 }
 
+// Helper function to call OpenAI API directly
+async function callOpenAI(input: AiCodeAssistanceInput, apiKey: string): Promise<AiCodeAssistanceOutput> {
+  const openai = new OpenAI({ apiKey });
+
+  // Build the prompt
+  let prompt = `You are an expert AI code assistant that helps users understand, fix, and write Python code.
+The user's instruction is: "${input.instruction}"
+
+The user has provided the following code:
+\`\`\`python
+${input.code}
+\`\`\`
+`;
+
+  if (input.uploadedFiles && input.uploadedFiles.length > 0) {
+    prompt += `\n\nThe user's project contains the following files that you can use as context or reference:\n`;
+    input.uploadedFiles.forEach(file => {
+      prompt += `\nFile: ${file.name} (${file.type})\n\`\`\`${file.type}\n${file.content}\n\`\`\`\n`;
+    });
+  }
+
+  prompt += `\n\nFollow these rules:
+1. Analyze the user's instruction to determine their intent (e.g., explain, write, fix, optimize, create a file).
+2. If the intent is purely to get an explanation or answer a question, provide a clear, concise textual response. Do not return any code.
+3. If the intent is to modify existing code, provide the complete, updated Python code.
+4. If the intent is to generate a new file, extract the filename and provide the complete code for the new file.
+5. Do not wrap code in markdown backticks in your response.
+
+Respond in JSON format with this structure:
+{
+  "response": "Your textual explanation",
+  "code": "The code if applicable (optional)",
+  "fileName": "The filename if creating a new file (optional)"
+}`;
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [{ role: 'user', content: prompt }],
+    response_format: { type: 'json_object' },
+    temperature: 0.7,
+  });
+
+  const result = JSON.parse(completion.choices[0].message.content || '{}');
+
+  return {
+    response: result.response || 'No response generated',
+    code: result.code,
+    fileName: result.fileName
+  };
+}
+
 const aiCodeAssistanceFlow = async (input: AiCodeAssistanceInput): Promise<AiCodeAssistanceOutput> => {
   try {
     // Get current user
@@ -109,8 +162,11 @@ const aiCodeAssistanceFlow = async (input: AiCodeAssistanceInput): Promise<AiCod
     // Fetch user's API keys
     const userApiKeys = await getUserApiKeys(user.id);
 
-    // Check if user has a Gemini key
-    if (!userApiKeys.gemini) {
+    // Determine which provider to use
+    const provider: AiProvider = input.provider || 'gemini';
+
+    // Check if user has the required API key for selected provider
+    if (provider === 'gemini' && !userApiKeys.gemini) {
       return {
         response: '❌ **Gemini API Key Required**\n\nPlease add your Gemini API key in your Profile settings to use AI assistance.\n\nGet your key from: https://makersuite.google.com/app/apikey',
         code: undefined,
@@ -118,15 +174,32 @@ const aiCodeAssistanceFlow = async (input: AiCodeAssistanceInput): Promise<AiCod
       };
     }
 
-    // Create AI instance with user's keys
-    const userAi = getAiForUser(userApiKeys);
+    if (provider === 'openai' && !userApiKeys.openai) {
+      return {
+        response: '❌ **OpenAI API Key Required**\n\nPlease add your OpenAI API key in your Profile settings to use AI assistance.\n\nGet your key from: https://platform.openai.com/api-keys',
+        code: undefined,
+        fileName: undefined
+      };
+    }
 
-    // Define prompt dynamically
-    const prompt = userAi.definePrompt({
-      name: 'aiCodeAssistancePrompt',
-      input: { schema: AiCodeAssistanceInputSchema },
-      output: { schema: AiCodeAssistanceOutputSchema },
-      prompt: `You are an expert AI code assistant that helps users understand, fix, and write Python code.
+    // Route to the appropriate provider
+    if (provider === 'openai') {
+      // Use OpenAI SDK directly
+      console.log('[AI] Using OpenAI provider');
+      return await retryWithBackoff(async () => {
+        return await callOpenAI(input, userApiKeys.openai!);
+      }, 3, 1000);
+    } else {
+      // Use Gemini via Genkit
+      console.log('[AI] Using Gemini provider');
+      const userAi = getAiForUser(userApiKeys, 'gemini');
+
+      // Define prompt dynamically
+      const prompt = userAi.definePrompt({
+        name: 'aiCodeAssistancePrompt',
+        input: { schema: AiCodeAssistanceInputSchema },
+        output: { schema: AiCodeAssistanceOutputSchema },
+        prompt: `You are an expert AI code assistant that helps users understand, fix, and write Python code.
 The user's instruction is: "{{{instruction}}}"
 
 The user has provided the following code:
@@ -162,14 +235,15 @@ Follow these rules:
 5.  If the intent is to write new code but no filename is specified, provide the new code in the 'code' field and a 'response' explaining it. The user can then copy it or decide where to save it.
 6.  Do not wrap the code in the 'code' field in markdown backticks. Return only the raw code.
   `,
-    });
+      });
 
-    // Execute with retry
-    const { output } = await retryWithBackoff(async () => {
-      return await prompt(input);
-    }, 3, 1000);
+      // Execute with retry
+      const { output } = await retryWithBackoff(async () => {
+        return await prompt(input);
+      }, 3, 1000);
 
-    return output!;
+      return output!;
+    }
   } catch (error: any) {
     // Handle specific error types
     if (error?.status === 503 || error?.message?.includes('overloaded') || error?.message?.includes('Service Unavailable')) {
@@ -210,7 +284,7 @@ The AI service is currently overloaded. Please try again in a few moments.
 
       let response = `⚠️ **AI Quota Limit Reached**
 
-You've exceeded the free tier quota limit for the Gemini API.`;
+You've exceeded the free tier quota limit for the ${input.provider === 'openai' ? 'OpenAI' : 'Gemini'} API.`;
 
       if (quotaLimit) {
         response += `\n\n**Quota Limit:** ${quotaLimit} requests per day (free tier)`;
@@ -224,8 +298,9 @@ You've exceeded the free tier quota limit for the Gemini API.`;
 
       response += `\n\n**Solutions:**
 1. **Wait** - The quota resets daily. Try again after the reset period.
-2. **Upgrade your plan** - Visit [Google AI Studio](https://ai.google.dev/) to check your quota and upgrade options.
-3. **Continue manually** - You can still write and run code without AI assistance.`;
+2. **Try the other provider** - Switch to ${input.provider === 'openai' ? 'Gemini' : 'OpenAI'} in the dropdown.
+3. **Upgrade your plan** - Check your API provider's website for upgrade options.
+4. **Continue manually** - You can still write and run code without AI assistance.`;
 
       return {
         response,

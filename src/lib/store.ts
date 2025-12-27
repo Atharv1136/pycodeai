@@ -766,6 +766,7 @@ if not os.path.exists('${file.name}'):
         code: (attachCode && activeFile) ? activeFile.content : (isCreatingFile ? '' : 'No code attached.'),
         quickActions: get().quickActions,
         uploadedFiles: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+        provider: (provider as 'gemini' | 'openai') || 'gemini',
       };
 
       const result = await aiCodeAssistance(input);
