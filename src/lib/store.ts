@@ -785,12 +785,21 @@ if not os.path.exists('${file.name}'):
 
       if (newCode !== undefined && newCode !== null) {
         if (newFileName) {
-          // AI is creating a new file
-          console.log('[AI] Creating new file:', newFileName);
-          addNewFile(newFileName, newCode);
+          // Check if file already exists
+          const existingFile = get().files.find(f => f.name === newFileName);
+
+          if (existingFile) {
+            // File exists - update it
+            console.log('[AI] Updating existing file:', newFileName);
+            updateFileContent(newFileName, newCode);
+          } else {
+            // File doesn't exist - create it
+            console.log('[AI] Creating new file:', newFileName);
+            addNewFile(newFileName, newCode);
+          }
         } else if (activeFile) {
-          // AI is updating an existing file
-          console.log('[AI] Updating file:', activeFile.name);
+          // AI is updating the currently active file
+          console.log('[AI] Updating active file:', activeFile.name);
           updateFileContent(activeFile.name, newCode);
         }
       }
