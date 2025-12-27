@@ -94,6 +94,19 @@ export default function ProfilePage() {
           if (data.profile) {
             setProfile(data.profile)
 
+            // Load API keys into state (use masked keys as placeholders)
+            setApiKeys({
+              openai: data.profile.openaiApiKey || '',
+              gemini: data.profile.geminiApiKey || ''
+            })
+
+            console.log('[Profile] Loaded API keys:', {
+              hasOpenAI: data.profile.hasOpenAiKey,
+              hasGemini: data.profile.hasGeminiKey,
+              openaiMasked: data.profile.openaiApiKey,
+              geminiMasked: data.profile.geminiApiKey
+            })
+
             // Load stats
             await getUserStats()
             setStats({
