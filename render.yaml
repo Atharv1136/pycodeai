@@ -3,6 +3,9 @@ services:
     name: pyapp
     runtime: node
     buildCommand: |
+      # Install SDL2 libraries required for pygame
+      apt-get update && apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+      
       # Install Python dependencies (Python is pre-installed on Render)
       pip install -r requirements.txt
       
@@ -11,6 +14,8 @@ services:
       npm run build
     startCommand: npm start
     envVars:
+      - key: SDL_VIDEODRIVER
+        value: dummy
       - key: NODE_VERSION
         value: 20
       - key: NODE_ENV
